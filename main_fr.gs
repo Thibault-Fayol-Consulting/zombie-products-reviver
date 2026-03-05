@@ -1,12 +1,24 @@
 /**
- * zombie-products-reviver - Script Google Ads for SMBs
- * Author: Thibault Fayol
+ * --------------------------------------------------------------------------
+ * zombie-products-reviver - Google Ads Script for SMBs
+ * --------------------------------------------------------------------------
+ * Author: Thibault Fayol - Consultant SEA PME
+ * Website: https://thibaultfayol.com
+ * License: MIT
+ * --------------------------------------------------------------------------
  */
-var CONFIG = { TEST_MODE: true };
-function main(){
-  var prodIter = AdsApp.productGroups().withCondition("Impressions = 0").forDateRange("LAST_30_DAYS").get();
-  while(prodIter.hasNext()){
-    var prod = prodIter.next();
-    Logger.log("Zombie product found: " + prod.getValue());
-  }
+var CONFIG = { TEST_MODE: true, BID_BOOST_PERCENT: 20 };
+function main() {
+    Logger.log("Réanimation des Produits Zombies...");
+    var prodIter = AdsApp.productGroups().withCondition("Impressions = 0").withCondition("MaxCpc > 0").forDateRange("LAST_30_DAYS").get();
+    var count = 0;
+    while(prodIter.hasNext()){
+        var prod = prodIter.next();
+        var oldCpc = prod.getMaxCpc();
+        var newCpc = oldCpc * (1 + (CONFIG.BID_BOOST_PERCENT/100));
+        Logger.log("Boost du produit zombie : " + (prod.getValue()||"Base") + " de " + oldCpc + " à " + newCpc.toFixed(2));
+        if(!CONFIG.TEST_MODE) prod.setMaxCpc(newCpc);
+        count++;
+    }
+    Logger.log("A réanimé " + count + " produits.");
 }
